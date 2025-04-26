@@ -47,3 +47,4 @@ Stick
 Axe
 Balloon
 Watchtower
+Candle
