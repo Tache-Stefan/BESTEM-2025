@@ -37,6 +37,11 @@ def get_sentence_embedding(text):
 def what_beats(word):
     if word == '':
         return
+    elif word.lower() == 'pillar':
+        return 7
+    elif word.lower() == 'tornado':
+        return 52
+
     word_embedding = get_sentence_embedding(word)
     beaten_by = None
     maximum_similarity = 0.0
@@ -74,35 +79,64 @@ def what_beats(word):
         # print(f"{beaten_by} -> {index}")
         return index
 
+# def play_game(player_id):
+#     global sys_word
+#     for round_id in range(1, NUM_ROUNDS + 1):
+#         round_num = -1
+#
+#         while round_num != round_id:
+#             response = requests.get(get_url)
+#             print(response.json())
+#             sys_word = response.json()['word']
+#             round_num = response.json()['round']
+#             # print(what_beats(sys_word), sys_word)
+#             sleep(1)
+#
+#         if round_id > 1:
+#             status = requests.get(status_url)
+#             print(status.json())
+#
+#         chosen_word = what_beats(sys_word)
+#         data = {"player_id": player_id, "word_id": chosen_word, "round_id": round_id}
+#         response = requests.post(post_url, json=data)
+#         # print(response)
+#         print(response.json())
+
 def play_game(player_id):
-    global sys_word
-    for round_id in range(1, NUM_ROUNDS + 1):
-        round_num = -1
 
-        while round_num != round_id:
-            response = requests.get(get_url)
-            print(response.json())
-            sys_word = response.json()['word']
-            round_num = response.json()['round']
-            # print(what_beats(sys_word), sys_word)
-            sleep(1)
+    def get_round():
+        response = requests.get(get_url)
+        print(response.json())
+        sys_word = response.json()['word']
+        round_num = response.json()['round']
+        return (sys_word, round_num)
 
-        if round_id > 1:
-            status = requests.get(status_url)
+    submitted_rounds = []
+    round_num = 0
+
+    while round_num != NUM_ROUNDS :
+        print(submitted_rounds)
+        sys_word, round_num = get_round()
+        while round_num == 0 or round_num in submitted_rounds:
+            sys_word, round_num = get_round()
+            sleep(0.5)
+
+        if round_num > 1:
+            status = requests.post(status_url, json={"player_id": player_id}, timeout=2)
             print(status.json())
 
-        chosen_word = what_beats(sys_word)
-        data = {"player_id": player_id, "word_id": chosen_word, "round_id": round_id}
-        response = requests.post(post_url, json=data)
-        # print(response)
+        choosen_word = what_beats(sys_word)
+        data = {"player_id": player_id, "word_id": choosen_word, "round_id": round_num}
+        response = requests.post(post_url, json=data, timeout=5)
+        submitted_rounds.append(round_num)
+        print("POST: !!!!!!!!!!!!!!!!")
         print(response.json())
 
 def register(player_id):
     register_url = f"{host}/register"
     data = {"player_id": player_id}
     response = requests.post(register_url, json=data)
-
     return response.json()
 
-register("kPgkmt47")
-play_game('kPgkmt47')
+# register("kPgkmt47")
+# play_game('kPgkmt47')
