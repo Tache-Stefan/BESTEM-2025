@@ -1,6 +1,5 @@
 import requests
 from time import sleep
-import random
 import json
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
@@ -13,7 +12,7 @@ host = "http://10.41.186.9:8000"
 post_url = f"{host}/submit-word"
 get_url = f"{host}/get-word"
 status_url = f"{host}/status"
-NUM_ROUNDS = 5
+NUM_ROUNDS = 10
 
 word_costs = None
 word_counters = None
@@ -66,11 +65,11 @@ def what_beats(word):
                 best_beating_word = beating_word
 
     if best_beating_word:
-        # print(f"Cuvântul cu cel mai mic cost care bate '{word}': {best_beating_word} (cost: {min_cost})")
+        # print(f"Cuvantul cu cel mai mic cost care bate '{word}': {best_beating_word} (cost: {min_cost})")
         index = list(word_costs.keys()).index(best_beating_word) + 1
         return index
     else:
-        # print(f"Cuvântul cu cel mai mic cost care bate {word} : {beaten_by}")
+        # print(f"Cuvantul cu cel mai mic cost care bate {word} : {beaten_by}")
         index = list(word_costs.keys()).index(beaten_by) + 1
         # print(f"{beaten_by} -> {index}")
         return index
@@ -85,7 +84,7 @@ def play_game(player_id):
             print(response.json())
             sys_word = response.json()['word']
             round_num = response.json()['round']
-            print(what_beats(sys_word), sys_word)
+            # print(what_beats(sys_word), sys_word)
             sleep(1)
 
         if round_id > 1:
@@ -95,6 +94,15 @@ def play_game(player_id):
         chosen_word = what_beats(sys_word)
         data = {"player_id": player_id, "word_id": chosen_word, "round_id": round_id}
         response = requests.post(post_url, json=data)
+        # print(response)
         print(response.json())
 
+def register(player_id):
+    register_url = f"{host}/register"
+    data = {"player_id": player_id}
+    response = requests.post(register_url, json=data)
+
+    return response.json()
+
+register("kPgkmt47")
 play_game('kPgkmt47')
